@@ -14,7 +14,7 @@ video = cv2.VideoCapture(0)
 def print_result(result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
     # cv2.imshow('Show', output_image.numpy_view())
     # imright = output_image.numpy_view()
-    print(result.gestures)    
+    print(result.gestures)
 
 
 options = GestureRecognizerOptions(
@@ -31,7 +31,7 @@ with GestureRecognizer.create_from_options(options) as recognizer:
 
         if not ret:
             print("Ignoring empty frame")
-            break
+            continue
 
         timestamp += 1
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
