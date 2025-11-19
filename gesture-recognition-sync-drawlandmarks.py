@@ -23,40 +23,42 @@ def print_result(result: GestureRecognizerResult, output_image: mp.Image, timest
     # show frame in window if reading was successful
     #cv2.imshow("Camera Feed", out
 
-def display_images_with_gesture_and_hand_landmarks(image, results):
+def display_image_with_gesture_and_hand_landmarks(image, results):
     """Displays a batch of images with the gesture category and its score along with the hand landmarks."""
-    # Images and labels.
 
-    if not results.gestures or not results.hand_landmarks:
-        return
-    
-    top_gesture = results.gestures[0][0]  # Get the top gesture from the first hand.
-    multi_hand_landmarks_list = results.hand_landmarks
-
-    # Size and spacing.
-    FIGSIZE = 13.0
-    SPACING = 0.1
-
-    # Display gestures and hand landmarks.
-
-    title = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
     annotated_image = image.copy()
 
-    for hand_landmarks in multi_hand_landmarks_list:
-        hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-        hand_landmarks_proto.landmark.extend([
-        landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in hand_landmarks
-        ])
+    if results.gestures and results.hand_landmarks:        
+        top_gesture = results.gestures[0][0]  # Get the top gesture from the first hand.
+        multi_hand_landmarks_list = results.hand_landmarks
 
-        mp_drawing.draw_landmarks(
-        annotated_image,
-        hand_landmarks_proto,
-        mp_hands.HAND_CONNECTIONS,
-        mp_drawing_styles.get_default_hand_landmarks_style(),
-        mp_drawing_styles.get_default_hand_connections_style())
+        # Size and spacing.
+        FIGSIZE = 13.0
+        SPACING = 0.1
 
-    cv2.putText(annotated_image, title, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        # Display gestures and hand landmarks.
+
+        title = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
+
+        for hand_landmarks in multi_hand_landmarks_list:
+            hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+            hand_landmarks_proto.landmark.extend([
+            landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in hand_landmarks
+            ])
+
+            mp_drawing.draw_landmarks(
+            annotated_image,
+            hand_landmarks_proto,
+            mp_hands.HAND_CONNECTIONS,
+            mp_drawing_styles.get_default_hand_landmarks_style(),
+            mp_drawing_styles.get_default_hand_connections_style())
+
+        cv2.putText(annotated_image, title, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    
+    # draw the annotated image
     cv2.imshow("Show", annotated_image)
+
+
 
 options = GestureRecognizerOptions(
     base_options=BaseOptions(model_asset_path=model_path),
@@ -77,12 +79,12 @@ with GestureRecognizer.create_from_options(options) as recognizer:
 
         if not success:
             print("Ignoring empty frame")
-            break
+            continue
 
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
         gesture_recognition_result = recognizer.recognize_for_video(mp_image, int(time.time_ns() / 1000000))
         print(gesture_recognition_result)
-        display_images_with_gesture_and_hand_landmarks(img, gesture_recognition_result)
+        display_image_with_gesture_and_hand_landmarks(img, gesture_recognition_result)
         #cv2.imshow("Camera Feed", img)
 
         # wait for pressing ESC to break the loop
