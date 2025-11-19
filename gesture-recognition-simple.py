@@ -15,19 +15,20 @@ VisionRunningMode = mp.tasks.vision.RunningMode
 
 def display_image_with_gesture(image, results):
     """Displays the image with the gesture category."""
-    if not results.gestures or not results.hand_landmarks:
-        return
-    
-    #print(gesture_recognition_result)
-    top_gesture = results.gestures[0][0]  # Get the top gesture from the first hand.
-    multi_hand_landmarks_list = results.hand_landmarks # Get the landmarks list of the first hand.
 
     # Display gestures and hand landmarks.
-    title = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
     annotated_image = image.copy()
 
-    # Write the gesture text on the image.
-    cv2.putText(annotated_image, title, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    if results.gestures and results.hand_landmarks:        
+        #print(gesture_recognition_result)
+        top_gesture = results.gestures[0][0]  # Get the top gesture from the first hand.
+        multi_hand_landmarks_list = results.hand_landmarks # Get the landmarks list of the first hand.
+
+        # Write the gesture text on the image, if a gesture is detected.
+        if top_gesture and top_gesture.category_name:
+            title = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
+            cv2.putText(annotated_image, title, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
     cv2.imshow("Show", annotated_image)
 
 # Create a gesture recognizer instance with the video mode:
@@ -51,7 +52,7 @@ with GestureRecognizer.create_from_options(options) as recognizer:
         # check if frame reading was successful, otherwise break the loop
         if not success:
             print("Ignoring empty frame")
-            break
+            continue
 
         # convert the frame to mediapipe image format
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
