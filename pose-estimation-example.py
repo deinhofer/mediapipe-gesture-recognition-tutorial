@@ -71,7 +71,7 @@ class Mediapipe_BodyModule():
 
                 if not ret:
                     print("Ignoring empty frame")
-                    break
+                    continue
 
                 timestamp += 1
                 mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
