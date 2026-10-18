@@ -3,7 +3,8 @@ import mediapipe as mp
 import time
 
 # init camera object
-cap=cv2.VideoCapture(0)
+camera_index = 0
+cap = cv2.VideoCapture(camera_index)
 
 while True:
     # read frame from camera

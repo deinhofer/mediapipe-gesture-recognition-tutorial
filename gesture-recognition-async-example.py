@@ -7,8 +7,8 @@ GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
 GestureRecognizerResult = mp.tasks.vision.GestureRecognizerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-
-video = cv2.VideoCapture(0)
+camera_index = 0
+cap = cv2.VideoCapture(camera_index)
 
 # Create a image segmenter instance with the live stream mode:
 def print_result(result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
@@ -25,9 +25,9 @@ options = GestureRecognizerOptions(
 timestamp = 0
 with GestureRecognizer.create_from_options(options) as recognizer:
   # The recognizer is initialized. Use it here.
-    while video.isOpened(): 
+    while cap.isOpened():
         # Capture frame-by-frame
-        ret, frame = video.read()
+        ret, frame = cap.read()
 
         if not ret:
             print("Ignoring empty frame")
@@ -44,5 +44,5 @@ with GestureRecognizer.create_from_options(options) as recognizer:
         if cv2.waitKey(5) & 0xFF == 27:
             break
 
-video.release()
+cap.release()
 cv2.destroyAllWindows()

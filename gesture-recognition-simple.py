@@ -2,7 +2,7 @@ import math
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from mediapipe.framework.formats import landmark_pb2
+#from mediapipe.framework.formats import landmark_pb2
 import time
 
 model_path = 'models/gesture_recognizer.task'
@@ -41,7 +41,8 @@ options = GestureRecognizerOptions(
 
 # init camera object
 import cv2
-cap=cv2.VideoCapture(0)
+camera_index = 0
+cap = cv2.VideoCapture(camera_index)
 
 with GestureRecognizer.create_from_options(options) as recognizer:
   # The detector is initialized. Use it here.
@@ -57,7 +58,7 @@ with GestureRecognizer.create_from_options(options) as recognizer:
         # convert the frame to mediapipe image format
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
-        # perform gesture recognition on the frame
+        # perform gesture recognition on the frame    
         gesture_recognition_result = recognizer.recognize_for_video(mp_image, int(time.time_ns() / 1000000))
         display_image_with_gesture(img, gesture_recognition_result)
 
