@@ -1,0 +1,74 @@
+/*!
+@theme fhtwA4
+@version 0.1.0
+*/
+
+/* fhtw.css */
+@import 'default'; /* Import default Marp styles to build upon */
+
+section {
+    background-image: none;
+    background-color: white;
+    font-size: 15px; 
+    color:black;
+    padding: 1rem;
+    padding-left: 50px;
+    padding-right: 50px;
+    width: 210mm;
+    height: 297mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 50px;
+}
+
+section[data-class="lead"] {
+    background-image: 
+      url('./img/fhtw_logo.svg'),       /* Logo on top layer */
+      linear-gradient(rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.70)),
+      url('./img/title_bg.jpg'); /* Background image on bottom layer */
+    
+    /* Position and size of each layer */
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: bottom left, center, top; /* Position logo in bottom-right */
+    background-size: 600px, cover, cover;             /* Logo size and background cover */
+  
+    justify-content: center;
+    /*font-family: Lato, 'Avenir Next', Avenir, 'Trebuchet MS', 'Segoe UI', sans-serif; /*default*/
+}
+
+section.lead h1 {
+    font-size: 3em;
+    text-align: center;
+}
+
+section.lead p {
+    font-size: 0.9em;
+    text-align: center;
+}
+
+section[data-class="page"] {
+    background-image:
+      url('./themes/img/fhtw_logo.svg');       /* Logo on top layer */ 
+    /* Position and size of each layer */
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: top right;            /* Position logo in bottom-right */
+    background-size: 150px;                    /* Logo size and background cover */     
+}
+
+h1,h2 {
+    margin-bottom: 5px;
+}
+
+footer {
+    /*font-family: Lato, 'Avenir Next', Avenir, 'Trebuchet MS', 'Segoe UI', sans-serif; /*default*/
+    font-size: 60%;
+    color: #6a7a7d;
+    text-align: start;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
