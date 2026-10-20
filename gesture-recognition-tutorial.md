@@ -13,17 +13,26 @@ _class: lead
 -->
 
 # Assistive Technologies Platformen
+
 ## Hand Gesture Recognition
 
 ---
 
-# Example result
+## Example result
 
 <!-- Add your hand-tracking screenshot here. -->
 
 The finished webcam window shows detected hand landmarks and connections, the predicted gesture with its score, and the FPS overlay.
 
 ![Camera image of the left hand with a thumb up gesture. The hand landmarks and connections are drawn on top of the image and the name of the gesture and frame rate are also displayed](./img/screenshot-thumb-gesture.png)
+
+---
+
+## Hand landmarks of mediapipe GestureRecognizer
+
+Illustration of detected hand landmarks including indices and label:
+
+<img alt="Illustration of detected hand landmarks including indices and label" src="https://developers.google.com/static/mediapipe/images/solutions/hand-landmarks.png" width="1200">
 
 ---
 
