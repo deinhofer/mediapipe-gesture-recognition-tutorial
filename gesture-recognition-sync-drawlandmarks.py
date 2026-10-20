@@ -50,7 +50,7 @@ def display_image_with_gesture_and_hand_landmarks(
 
 options = GestureRecognizerOptions(
     base_options=BaseOptions(model_asset_path=model_path),
-    running_mode=VisionRunningMode.VIDEO,
+    running_mode=VisionRunningMode.VIDEO
 )
 
 camera_index = 0
@@ -71,7 +71,7 @@ with GestureRecognizer.create_from_options(options) as recognizer:
         gesture_recognition_result = recognizer.recognize_for_video(
             mp_image, timestamp_ms
         )
-        print(gesture_recognition_result)
+        #print(gesture_recognition_result)
         display_image_with_gesture_and_hand_landmarks(img, gesture_recognition_result)
 
         if cv2.waitKey(1) == 27:
