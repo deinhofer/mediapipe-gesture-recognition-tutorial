@@ -82,15 +82,19 @@ These references are useful beyond the calls shown here: follow a class or funct
 
 ## Before you start
 
-From the repository root, install the project dependencies and run the example:
+Create a file named ```requirements.txt``` with the following contents:
+```bash
+opencv-python==5.0.*
+mediapipe==1.1.*
+```
+
+Then install the project dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-The model bundle must be available at `models/gesture_recognizer.task` and can be downloaded from the [Gesture Recognizer models section](https://developers.google.com/edge/mediapipe/solutions/vision/gesture_recognizer/index#models). The camera number in `cv2.VideoCapture(...)` depends on your computer; this project currently uses `0`. Try another index if that is not your webcam.
-
-The code below uses the MediaPipe Tasks API available in MediaPipe 1.1.1. In particular, its landmark drawing utilities live under `mp.tasks.vision`, not the older `mp.solutions` API.
+The model bundle must be available at `models/gesture_recognizer.task` and can be downloaded from the [Gesture Recognizer models section](https://developers.google.com/edge/mediapipe/solutions/vision/gesture_recognizer/index#models). 
 
 ---
 
@@ -274,125 +278,93 @@ The `with` block manages the recognizer's native resources. Creating it once avo
 
 ---
 
-## Step 11 — In display_result: get the gesture name and score
-
-The first classification for the first detected hand can be read like this:
-
-```python
-if result.gestures and result.gestures[0]:
-    top_gesture = result.gestures[0][0]
-    label = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
-```
-
-`category_name` is the predicted gesture label. `score` is the model's classification score; formatting it with `.2f` shows two decimal places. See the [result API](https://ai.google.dev/edge/api/mediapipe/python/mp/tasks/vision/GestureRecognizerResult) and its linked category type for other returned properties.
-
-The nested list is organized by detected hand, then by category. This snippet displays the highest-ranked category for the **first** hand; a multi-hand application can loop through the hands and their categories.
-
----
-
-## Step 12 — In display_result: draw landmarks and connections
+## Step 11 — In display_result: draw landmarks and connections
 
 In MediaPipe 1.1.1, use the Tasks vision drawing tools and hand connection definitions:
 
 ```python
-mp_hands = mp.tasks.vision.HandLandmarksConnections
-mp_drawing = mp.tasks.vision.drawing_utils
-mp_drawing_styles = mp.tasks.vision.drawing_styles
+def display_result(frame, result: GestureRecognizerResult, fps: float) -> None:
+    annotated_frame = frame.copy()
 
-for hand_landmarks in result.hand_landmarks:
-    mp_drawing.draw_landmarks(
-        annotated_frame,
-        hand_landmarks,
-        mp_hands.HAND_CONNECTIONS,
-        mp_drawing_styles.get_default_hand_landmarks_style(),
-        mp_drawing_styles.get_default_hand_connections_style(),
-    )
+    for hand_landmarks in result.hand_landmarks:
+        mp_drawing.draw_landmarks(
+            annotated_frame,
+            hand_landmarks,
+            mp_hands.HAND_CONNECTIONS,
+            mp_drawing_styles.get_default_hand_landmarks_style(),
+            mp_drawing_styles.get_default_hand_connections_style(),
+        )
 ```
 
 Each detected hand has 21 normalized landmarks. [`HandLandmarksConnections`](https://ai.google.dev/edge/api/mediapipe/python/mp/tasks/vision/HandLandmarksConnections) describes which landmark pairs form the hand skeleton. The [drawing utilities API](https://ai.google.dev/edge/api/mediapipe/python/mp/tasks/vision/drawing_utils) and [drawing styles API](https://ai.google.dev/edge/api/mediapipe/python/mp/tasks/vision/drawing_styles) provide the default point and line styles.
 
 ---
 
-## Step 13 — In display_result: draw landmarks on a copy
+## Step 12 — In display_result: add the gesture label
 
-Start with a copy so the camera frame remains unchanged, then draw the detected landmarks:
+Annotate the top-ranked gesture label on the frame when a classification is available:
 
 ```python
-annotated_frame = frame.copy()
-
-for hand_landmarks in result.hand_landmarks:
-    mp_drawing.draw_landmarks(
-        annotated_frame,
-        hand_landmarks,
-        mp_hands.HAND_CONNECTIONS,
-        mp_drawing_styles.get_default_hand_landmarks_style(),
-        mp_drawing_styles.get_default_hand_connections_style(),
-    )
+    ...
+    if result.gestures and result.gestures[0]:
+        top_gesture = result.gestures[0][0]
+        label = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
+        cv2.putText(
+            annotated_frame, label, (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+        )
 ```
 
-The drawing helper writes onto the supplied image. `annotated_frame` is the copy we will display and annotate.
+`category_name` is the predicted gesture label. `score` is the model's classification score; formatting it with `.2f` shows two decimal places. See the [result API](https://ai.google.dev/edge/api/mediapipe/python/mp/tasks/vision/GestureRecognizerResult) and its linked category type for other returned properties.
+
+The nested list is organized by detected hand, then by category. This snippet displays the highest-ranked category for the **first** hand; a multi-hand application can loop through the hands and their categories.
+OpenCV's [`putText` API](https://docs.opencv.org/4.x/d6/d6e/group__imgproc__draw.html) uses BGR color order too;
 
 ---
 
-## Step 14 — In display_result: add the gesture label
-
-Add the top-ranked gesture label when a classification is available:
-
-```python
-if result.gestures and result.gestures[0]:
-    top_gesture = result.gestures[0][0]
-    label = f"{top_gesture.category_name} ({top_gesture.score:.2f})"
-    cv2.putText(
-        annotated_frame, label, (10, 30),
-        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
-    )
-```
-
-The text origin `(10, 30)` is near the upper-left corner. OpenCV's [`putText` API](https://docs.opencv.org/4.x/d6/d6e/group__imgproc__draw.html) uses BGR color order too; `(0, 255, 0)` is green in either RGB or BGR because its red and blue components are zero.
-
----
-
-## Step 15 — In display_result: draw the FPS and show the window
-
-Add an FPS overlay on every frame, even if no hand is detected:
-
-```python
-cv2.putText(
-    annotated_frame,
-    f"FPS: {fps:.1f}",
-    (10, 65),
-    cv2.FONT_HERSHEY_SIMPLEX,
-    0.8,
-    (0, 255, 0),
-    2,
-)
-cv2.imshow("Gesture recognition", annotated_frame)
-```
-
-This FPS estimates the rate at which successful camera frames reach the loop. It includes recognition and display work between reads, as well as camera timing; it is not a benchmark of the model alone. OpenCV's [HighGUI API](https://docs.opencv.org/4.x/d7/dfc/group__highgui.html) documents `imshow` and the related window and keyboard functions.
-
----
-
-## Step 16 — In the loop: calculate the frame rate
+## Step 13 — In the loop: calculate the frame rate
 
 To estimate the displayed stream rate, measure the time between successful frame reads:
 
 ```python
-previous_frame_time = None
+    ...
+    previous_frame_time = None
 
-# After a successful cap.read():
-frame_time = time.perf_counter()
-fps = 0.0
-if previous_frame_time is not None:
-    elapsed_seconds = frame_time - previous_frame_time
-    if elapsed_seconds > 0:
-        fps = 1.0 / elapsed_seconds
-previous_frame_time = frame_time
+    # After a successful cap.read():
+    frame_time = time.perf_counter()
+    fps = 0.0
+    if previous_frame_time is not None:
+        elapsed_seconds = frame_time - previous_frame_time
+        if elapsed_seconds > 0:
+            fps = 1.0 / elapsed_seconds
+    previous_frame_time = frame_time
 ```
 
 `perf_counter()` is a high-resolution monotonic clock for measuring elapsed time. One frame divided by the seconds between frames gives frames per second: **FPS = 1 / elapsed_seconds**.
 
 The first frame has no previous timestamp, so its FPS starts at `0.0`. This is an interval estimate, so it can fluctuate from frame to frame; smoothing multiple intervals can make the display steadier.
+
+---
+
+## Step 14 — In display_result: draw the FPS and show the window
+
+Add an FPS overlay on every frame, even if no hand is detected:
+
+```python
+    ...
+    cv2.putText(
+        annotated_frame,
+        f"FPS: {fps:.1f}",
+        (10, 65),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.8,
+        (0, 255, 0),
+        2,
+    )
+    cv2.imshow("Gesture recognition", annotated_frame)
+```
+
+This FPS estimates the rate at which successful camera frames reach the loop. It includes recognition and display work between reads, as well as camera timing; it is not a benchmark of the model alone. OpenCV's [HighGUI API](https://docs.opencv.org/4.x/d7/dfc/group__highgui.html) documents `imshow` and the related window and keyboard functions.
 
 ---
 
